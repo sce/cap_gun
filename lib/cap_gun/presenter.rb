@@ -22,7 +22,11 @@ module CapGun
     def from
       capistrano[:cap_gun_email_envelope][:from] || DEFAULT_SENDER
     end
-    
+
+    def scm_log_format
+      capistrano[:cap_gun_scm_log_format]
+    end
+
     def current_user
       Etc.getlogin
     end
@@ -57,7 +61,8 @@ module CapGun
     def scm_log_messages
       messages = case capistrano[:scm].to_sym
         when :git
-          `git log #{previous_revision}..#{capistrano[:current_revision]} --pretty=format:%h:%s`
+          log_format = scm_log_format || '--pretty=format:%h:%s'
+          `git log #{previous_revision}..#{capistrano[:current_revision]} #{log_format}`
         when :subversion
           `svn log -r #{previous_revision.to_i+1}:#{capistrano[:current_revision]}`
         else
